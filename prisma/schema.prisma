@@ -60,6 +60,7 @@ model GitHubAccount {
   @@map("github_accounts")
 }
 
+
 model GitHubRepo {
   id           Int      @id @default(autoincrement())
   userId       Int      @map("user_id")
@@ -73,9 +74,10 @@ model GitHubRepo {
   pullRequests PullRequest[]
 
   @@unique([userId, repoFullName])
+  @@index([repoFullName, enabled, installationId])
   @@index([installationId])
   @@index([enabled])
-  @@index([repoFullName, enabled])
+  @@index([updatedAt])
   @@map("github_repos")
 }
 
@@ -132,7 +134,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
-  @@index([userId, provider])
+  @@index([userId])
   @@map("accounts")
 }
 
@@ -183,7 +185,6 @@ model Repository {
   analysisJobs   AnalysisJob[]
 
   @@index([userId])
-  @@index([userId, url])
   @@map("repositories")
 }
 
@@ -222,7 +223,7 @@ model AnalysisJob {
   @@index([lockExpiresAt])
   @@index([repositoryId])
   @@index([userId])
-  @@index([repositoryId, userId, createdAt])
+  @@index([status, lockExpiresAt, nextRunAt])
   @@map("analysis_jobs")
 }
 
@@ -302,6 +303,7 @@ model FileChange {
   file      File?    @relation(fields: [fileId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@index([commitId])
   @@map("file_changes")
 }
 
