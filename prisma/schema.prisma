@@ -223,6 +223,7 @@ model AnalysisJob {
   @@index([repositoryId])
   @@index([userId])
   @@index([repositoryId, userId, createdAt])
+  @@index([userId, status])
   @@map("analysis_jobs")
 }
 
