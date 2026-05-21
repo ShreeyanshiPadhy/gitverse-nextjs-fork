@@ -269,6 +269,46 @@ OAuth (Google / NextAuth):
 Optional:
 
 - `NEXT_PUBLIC_API_URL` - API URL for client-side (defaults to current domain)
+## 🛠️ Troubleshooting
+
+### GitHub API Rate Limit Exceeded
+
+If GitHub API requests fail due to rate limiting:
+
+- Ensure `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, and `GITHUB_WEBHOOK_SECRET` are configured correctly.
+- Avoid triggering excessive analysis requests repeatedly during development.
+- Wait a few minutes before retrying if GitHub temporarily blocks requests.
+- Verify that your GitHub App has the required permissions enabled.
+
+### Missing Environment Variables
+
+If the application fails during startup or deployment:
+
+- Confirm all required variables from `.env.example` are configured.
+- Ensure `DATABASE_URL`, `NEXTAUTH_SECRET`, `JWT_SECRET`, and `GEMINI_API_KEY` are valid.
+- Restart the development server after updating environment variables.
+
+### Google OAuth Issues
+
+If Google login does not work:
+
+- Verify `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+- Ensure the OAuth callback URL matches:
+  
+  ```
+  http://localhost:3000/api/auth/callback/google
+  ```
+
+- For production deployments, update callback URLs in Google Cloud Console.
+
+### Vercel Deployment Issues
+
+When deploying on Vercel:
+
+- Add all required environment variables in the Vercel dashboard.
+- Redeploy the project after modifying environment variables.
+- Ensure `NEXTAUTH_URL` matches the deployed domain.
+- Verify database connections are accessible from production.
 
 ## 🤝 Contributing
 
