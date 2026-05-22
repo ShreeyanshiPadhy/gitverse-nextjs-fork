@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+
   } catch (error: any) {
     const duration = Date.now() - startTime;
 
@@ -116,5 +117,14 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
+
+  } finally {
+    const duration = Date.now() - startTime;
+
+    console.log({
+      route: "POST /api/ai/analyze-repository",
+      duration_ms: duration,
+      status: "completed"
+    });
   }
 }

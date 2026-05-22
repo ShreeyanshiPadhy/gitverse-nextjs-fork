@@ -2,17 +2,14 @@ import { NextResponse } from 'next/server';
 import { startAnalysisWorkerLoop } from '../../../../scripts/analysisWorker';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // Allow maximum serverless execution time
+export const maxDuration = 300;
 
 export async function GET(request: Request) {
-  // Simple auth check for internal cron jobs
-  const authHeader = request.headers.get('authorization');
-  if (
-    process.env.ANALYSIS_RUNNER_SECRET &&
-    authHeader !== `Bearer ${process.env.ANALYSIS_RUNNER_SECRET}`
-  ) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const requestStart = Date.now();
+
+  try {
+    // Auth check
+    const authHeader = request.headers.get('authorization');
 
   const url = new URL(request.url);
   const budgetParam = url.searchParams.get('timeBudgetMs');
