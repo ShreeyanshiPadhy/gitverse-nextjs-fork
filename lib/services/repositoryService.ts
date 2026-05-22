@@ -576,9 +576,16 @@ export class RepositoryService {
       throw new Error("Repository not found");
     }
 
-    await prisma.repository.delete({
-      where: { id },
-    });
+    // Delete related analysis jobs and the repository in a transaction
+    // to ensure no orphaned rows remain if the process is interrupted.
+    await prisma.$transaction([
+      prisma.analysisJob.deleteMany({
+        where: { repositoryId: id },
+      }),
+      prisma.repository.delete({
+        where: { id },
+      }),
+    ]);
 
     return { success: true };
   }
