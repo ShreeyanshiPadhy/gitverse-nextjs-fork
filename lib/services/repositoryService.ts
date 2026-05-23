@@ -231,7 +231,36 @@ export class RepositoryService {
         progressPercent: 15,
         progressMessage: "Analyzing branches",
       });
-      const defaultBranch = branches.find((b) => b.isDefault)?.name || "main";
+      // Try to get default branch from GitHub API first, fallback to git detection
+let defaultBranch = branches.find((b) => b.isDefault)?.name || "main";
+
+// Extract owner/repo from URL for GitHub API call
+const githubMatch = repository.url.match(
+  /github\.com[/:]([^/]+)\/([^/.]+?)(?:\.git)?$/i
+);
+if (githubMatch) {
+  try {
+    const [, owner, repo] = githubMatch;
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
+    const headers: Record<string, string> = {
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
+    if (process.env.GITHUB_TOKEN) {
+      headers["Authorization"] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+    const res = await fetch(apiUrl, { headers });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.default_branch) {
+        defaultBranch = data.default_branch;
+        console.log(`[defaultBranch] GitHub API: ${defaultBranch}`);
+      }
+    }
+  } catch (err) {
+    console.warn("[defaultBranch] GitHub API failed, using git detection:", err);
+  }
+}
 
       await prisma.branch.createMany({
         data: branches.map((branch) => ({
