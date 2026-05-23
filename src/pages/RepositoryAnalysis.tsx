@@ -21,6 +21,10 @@ import {
   ArrowLeft,
   Trash2,
   Activity,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -62,6 +66,44 @@ const tabs: Tab[] = [
     icon: <BarChart3 className="h-4 w-4" />,
   },
 ];
+
+const StatusBadge = ({ status, isAnalyzing }: { status: string; isAnalyzing: boolean }) => {
+  const s = status?.toLowerCase() || "pending";
+
+  if (isAnalyzing || s === "analyzing" || s === "processing") {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Analyzing
+      </span>
+    );
+  }
+
+  if (s === "completed" || s === "done" || s === "ready") {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+        <CheckCircle2 className="h-3 w-3" />
+        Completed
+      </span>
+    );
+  }
+
+  if (s === "failed" || s === "error") {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-500 border border-red-500/20">
+        <AlertCircle className="h-3 w-3" />
+        Failed
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
+      <Clock className="h-3 w-3" />
+      Pending
+    </span>
+  );
+};
 
 export default function RepositoryAnalysis() {
   const params = useParams();
@@ -131,8 +173,13 @@ export default function RepositoryAnalysis() {
         setJob(response.data.latestJob);
       }
       console.log("Repository data:", response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching repository:", error);
+      toast({
+        title: "Error fetching repository",
+        description: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to load repository data.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -161,12 +208,17 @@ export default function RepositoryAnalysis() {
       if (nextJob?.status === "FAILED") {
         toast({
           title: "Analysis failed",
-          description: nextJob?.error || "The repository analysis failed.",
+          description: nextJob?.error || nextJob?.progressMessage || "The repository analysis encountered an unexpected error.",
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching analysis job:", error);
+      toast({
+        title: "Error checking analysis status",
+        description: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to connect to the analysis service.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -257,16 +309,7 @@ export default function RepositoryAnalysis() {
                   {repository.url}
                 </p>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <p className="text-xs text-muted-foreground">
-                    Status:{" "}
-                    <span className="capitalize">{repository.status}</span>
-                  </p>
-                  {isAnalyzing && (
-                    <span className="flex items-center gap-1 text-xs text-primary">
-                      <span className="animate-pulse">●</span>
-                      Analyzing...
-                    </span>
-                  )}
+                  <StatusBadge status={repository.status} isAnalyzing={isAnalyzing} />
                 </div>
               </div>
               {/* Delete button */}
