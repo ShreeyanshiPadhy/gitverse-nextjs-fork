@@ -300,6 +300,18 @@ Made with ❤️ by the GitVerse Team
 ### GitHub API Rate Limits
 
 #### What it looks like
+```
+Error: API rate limit exceeded for user ID XXXXXX
+Status: 403 Forbidden
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1716825600
+```
+
+You may also see this in the GitVerse UI:
+```
+Failed to fetch repository data. GitHub API rate limit exceeded.
+Please wait before retrying or add a GitHub token.
+```
 #### Why it happens
 GitHub allows **5,000 requests/hour** for authenticated users and only **60 requests/hour** for unauthenticated requests. Large repositories with many commits, files, or branches can hit this limit quickly during analysis.
 
