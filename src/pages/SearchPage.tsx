@@ -170,8 +170,12 @@ finally {
           searchQuery ? (
             <EmptyState
               icon={Search}
-              title="No Results Found"
-              description="We couldn't find any repositories matching your search query. Try a different term."
+              title="No repositories found"
+              description="We couldn't find any repositories matching your search query. Try adjusting your search term."
+              suggestions={[
+                "Try another repository",
+                "Check the GitHub username",
+              ]}
               actionLabel="Clear Search"
               onAction={() => setSearchQuery("")}
             />
