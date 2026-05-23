@@ -120,11 +120,7 @@ export async function GET(request: NextRequest) {
     const user = await requireAuth(request);
     const repositories = await repositoryService.listRepositories(user.userId);
 
-    return NextResponse.json({ repositories }, {
-      headers: {
-        "Cache-Control": "no-store, no-cache, must-revalidate, private",
-      },
-    });
+    return NextResponse.json({ repositories });
   } catch (error: any) {
     console.error("List repositories error:", sanitizeError(error));
     if (isHttpError(error)) {

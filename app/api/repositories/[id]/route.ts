@@ -47,11 +47,7 @@ export async function GET(
       },
     });
 
-    return NextResponse.json({ repository, latestJob }, {
-      headers: {
-        "Cache-Control": "no-store, no-cache, must-revalidate, private",
-      },
-    });
+    return NextResponse.json({ repository, latestJob });
   } catch (error: any) {
     console.error("Get repository error:", sanitizeError(error));
 
