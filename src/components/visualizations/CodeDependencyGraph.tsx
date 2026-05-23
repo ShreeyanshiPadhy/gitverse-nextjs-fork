@@ -21,8 +21,17 @@ interface GraphData {
   links: Link[];
 }
 
+interface RepositoryFile {
+  path: string;
+  lines?: number;
+}
+
+interface Repository {
+  files?: RepositoryFile[];
+}
+
 // Generate dependency graph from repository files
-const generateDependencyGraph = (repository: any): GraphData => {
+const generateDependencyGraph = (repository?: Repository): GraphData => {
   const nodes: Node[] = [];
   const links: Link[] = [];
 
@@ -31,7 +40,7 @@ const generateDependencyGraph = (repository: any): GraphData => {
   }
 
   // Extract unique folders and create nodes
-  const files = repository.files as any[];
+  const files = repository.files;
 
   // Create folder nodes
   const folderPaths = new Set<string>();
@@ -67,7 +76,7 @@ const generateDependencyGraph = (repository: any): GraphData => {
       id: `file-${file.path}`,
       name: fileName,
       type: "file",
-      size: Math.min(Math.max(file.lines / 10 || 50, 40), 150),
+      size: Math.min(Math.max((file.lines ?? 0) / 10 || 50, 40), 150),
       path: file.path,
     });
   });
@@ -104,7 +113,7 @@ const generateDependencyGraph = (repository: any): GraphData => {
 };
 
 interface CodeDependencyGraphProps {
-  repository?: any;
+  repository?: Repository;
 }
 
 export function CodeDependencyGraph({ repository }: CodeDependencyGraphProps) {
