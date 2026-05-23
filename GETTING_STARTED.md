@@ -287,8 +287,8 @@ GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nMIIE...\n-----END RSA P
 
 ### "Bad credentials" error
 - `GITHUB_APP_PRIVATE_KEY` format is incorrect — ensure `\n` is a literal backslash-n, not an actual newline
-- `GITHUB_APP_ID` must be a plain number, not a string — do not wrap it in quotes
+- `GITHUB_APP_ID` must contain numeric digits only — do not add extra quotes or spaces
 
 ### Private key error on Vercel
 - When pasting in Vercel, copy the **entire content** of the `.pem` file
-- Both `-----BEGIN RSA PRIVATE KEY-----` and `-----END RSA PRIVATE KEY-----` lines must be included
+- The full PEM block must be preserved — header may be `-----BEGIN RSA PRIVATE KEY-----` or `-----BEGIN PRIVATE KEY-----` depending on your key format
