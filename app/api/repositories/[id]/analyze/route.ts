@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isHttpError, requireAuth } from "@/lib/middleware";
+import { isHttpError, requireAuth , sanitizeError } from "@/lib/middleware";
 import { repositoryService } from "@/lib/services/repositoryService";
 import { analysisJobService } from "@/lib/services/analysisJobService";
+import prisma from "@/lib/prisma";
 
 export async function POST(
   request: NextRequest,
@@ -9,11 +10,11 @@ export async function POST(
 ) {
   try {
     const user = await requireAuth(request);
-    const id = Number(params.id);
+    const id = parseInt(params.id);
 
-    if (!Number.isInteger(id) || id <= 0) {
+    if (isNaN(id)) {
       return NextResponse.json(
-        { error: "Invalid repository ID. Must be a positive integer." },
+        { error: "Invalid repository ID" },
         { status: 400 }
       );
     }
@@ -28,17 +29,39 @@ export async function POST(
       );
     }
 
+    const existingJob = await prisma.analysisJob.findFirst({
+  where: {
+    repositoryId: id,
+    status: {
+      in: ["QUEUED", "PROCESSING"],
+    },
+  },
+});
+
+if (existingJob) {
+  return NextResponse.json(
+    {
+      error: "Analysis already in progress",
+      jobId: existingJob.id,
+    },
+    { status: 409 }
+  );
+}
+
     const job = await analysisJobService.createRepositoryAnalysisJob({
       repositoryId: id,
       userId: user.userId,
     });
+
+    kickLocalRunner(request);
+    kickProductionWorker();
 
     return NextResponse.json(
       { message: "Job queued", jobId: job.id, status: job.status },
       { status: 202 }
     );
   } catch (error: any) {
-    console.error("Analyze repository error:", error);
+    console.error("Analyze repository error:", sanitizeError(error));
     if (isHttpError(error)) {
       return NextResponse.json(
         { error: error.message },

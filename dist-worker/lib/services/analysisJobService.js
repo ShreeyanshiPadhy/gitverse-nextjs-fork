@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.analysisJobService = exports.AnalysisJobService = void 0;
 const prisma_1 = __importDefault(require("../prisma"));
-const DEFAULT_LOCK_MS = 5 * 60 * 1000;
+const DEFAULT_LOCK_MS = 10 * 60 * 1000;
 function computeBackoffMs(attempt) {
     // Exponential backoff with cap (10s, 20s, 40s, ... up to 5m)
     const base = 10_000;
@@ -70,22 +70,14 @@ class AnalysisJobService {
     async markFailed(params) {
         const shouldRetry = params.attempts < params.maxAttempts;
         if (shouldRetry) {
-            const delay = params.retryAfter
-                ? params.retryAfter * 1000
-                : computeBackoffMs(params.attempts);
-            const retryLabel = params.retryAfter
-                ? `Rate limited, retrying`
-                : `Retrying`;
+            const delay = computeBackoffMs(params.attempts);
             await prisma_1.default.analysisJob.update({
                 where: { id: params.jobId },
                 data: {
                     status: "QUEUED",
                     nextRunAt: new Date(Date.now() + delay),
-                    progressMessage: `${retryLabel} in ${Math.round(delay / 1000)}s`,
+                    progressMessage: `Retrying in ${Math.round(delay / 1000)}s`,
                     error: params.error,
-                    ...(params.retryAfter
-                        ? { progressDetails: { retryAfter: params.retryAfter, rateLimited: true } }
-                        : {}),
                     lockedAt: null,
                     lockedBy: null,
                     lockExpiresAt: null,
