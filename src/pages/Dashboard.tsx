@@ -104,6 +104,11 @@ export default function Dashboard() {
       setRepositories(Array.isArray(repos) ? repos : []);
     } catch (error) {
       console.error("Error fetching repositories:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch repositories.",
+        variant: "destructive",
+      });
       setRepositories([]);
     } finally {
       setLoading(false);
@@ -115,9 +120,9 @@ export default function Dashboard() {
     : 0;
   const totalContributors = Array.isArray(repositories)
     ? repositories.reduce(
-        (sum, r: any) => sum + (r._count?.contributors || 0),
-        0
-      )
+      (sum, r: any) => sum + (r._count?.contributors || 0),
+      0
+    )
     : 0;
   const totalFiles = Array.isArray(repositories)
     ? repositories.reduce((sum, r: any) => sum + (r._count?.files || 0), 0)
@@ -172,17 +177,17 @@ export default function Dashboard() {
 
   const recentActivity = Array.isArray(repositories)
     ? repositories
-        .filter((r: any) => r.status === "completed")
-        .slice(0, 5)
-        .map((repo: any) => ({
-          action: "Analyzed",
-          repo: repo.name,
-          time: formatTimeAgo(repo.lastAnalyzedAt || repo.createdAt),
-          status: repo.status,
-        }))
+      .filter((r: any) => r.status === "completed")
+      .slice(0, 5)
+      .map((repo: any) => ({
+        action: "Analyzed",
+        repo: repo.name,
+        time: formatTimeAgo(repo.lastAnalyzedAt || repo.createdAt),
+        status: repo.status,
+      }))
     : [];
 
-    const handleAnalyze = async () => {
+  const handleAnalyze = async () => {
     if (!repoUrl.trim()) return;
 
     setAnalyzing(true);
@@ -480,7 +485,7 @@ if (loading) {
                           <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                           {formatTimeAgo(
                             (repo as any).lastAnalyzedAt ||
-                              (repo as any).createdAt
+                            (repo as any).createdAt
                           )}
                         </div>
                       </div>
